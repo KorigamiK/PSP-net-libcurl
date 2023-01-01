@@ -7,11 +7,19 @@ project(
 	LANGUAGES CXX
 )
 
-add_executable(${PROJECT_NAME} main.cpp)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE HEADERS "include/*.hpp")
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# set CFlags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GLIBC_USE\(...\)=0")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -20,14 +28,14 @@ if (PLATFORM_PSP)
 	set(BUILD_PRX 1)
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE
-	pspge
-	pspwlan
-	pspnet
-	pspnet_apctl
-	pspnet_resolver
-	psphttp
-	  pspdebug	
+		pspge
 		pspdisplay
+	  pspdebug	
+		pspwlan
+		pspnet
+		pspnet_apctl
+		pspnet_resolver
+		psphttp
 		curl
 	)
 
@@ -37,6 +45,12 @@ if (PLATFORM_PSP)
 		BACKGROUND_PATH NULL
 		PREVIEW_PATH NULL
 		TITLE ${PROJECT_DESCRIPTION}
+	)
+
+	add_custom_target( 
+		RUN_PSP
+		DEPENDS ${PROJECT_NAME}
+		COMMAND PPSSPPSDL ./EBOOT.PBP
 	)
 
 else()

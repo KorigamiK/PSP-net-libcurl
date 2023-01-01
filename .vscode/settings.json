@@ -21,6 +21,11 @@
         "PSPBUILD": "aur-pkgbuild",
         "*.rmarkdown": "markdown",
         "*.rmd": "markdown",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "*.tcc": "cpp",
+        "streambuf": "cpp",
+        "system_error": "cpp",
+        "functional": "cpp",
+        "ostream": "cpp"
     },
 }
