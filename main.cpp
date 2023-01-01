@@ -1,6 +1,5 @@
-#include "pspdebug.h"
-#include "pspiofilemgr.h"
-#include <cstring>
+#include <pspdebug.h>
+#include <pspiofilemgr.h>
 #include <pspnet.h>
 #include <pspnet_apctl.h>
 #include <pspnet_inet.h>
@@ -9,6 +8,7 @@
 #include <psphttp.h>
 #include <psputility.h>
 
+#include <cstring>
 #include <malloc.h>
 #include <psphttp.h>
 #include <pspthreadman.h>
@@ -75,6 +75,7 @@ void curlDownloadFile(std::string url, std::string file)
 	CURL *curl;
 	CURLcode res;
 	curl = curl_easy_init();
+
 	if (curl)
 	{
 		struct stringcurl body;
@@ -82,7 +83,7 @@ void curlDownloadFile(std::string url, std::string file)
 		struct stringcurl header;
 		init_string(&header);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		// Set useragant string
+		// Set useragent string
 		curl_easy_setopt(
 				curl, CURLOPT_USERAGENT,
 				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, "
@@ -130,8 +131,8 @@ void curlDownloadFile(std::string url, std::string file)
 
 		if (res != CURLE_OK)
 		{
-			// fprintf(stderr, "curl_easy_perform() failed: %s\n",
-			// curl_easy_strerror(res));
+			fprintf(stderr, "curl_easy_perform() failed: %s\n",
+							curl_easy_strerror(res));
 		}
 		else
 		{
@@ -196,9 +197,9 @@ int main(int argc, char *argv[])
 	httpInit();
 
 	struct SceIoStat *dirStat = (SceIoStat *)malloc(sizeof(SceIoStat));
-	if (sceIoGetstat("ux0:data/curltest", dirStat) < 0)
+	if (sceIoGetstat("host0:data/curltest", dirStat) < 0)
 	{
-		sceIoMkdir("ux0:data/curltest", 0777);
+		sceIoMkdir("host0:data/curltest", 0777);
 	}
 	pspDebugScreenPrintf("Downloading github file");
 	curlDownloadFile("https://github.com/devingDev/VitaCord/releases/download/"
