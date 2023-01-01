@@ -17,18 +17,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (PLATFORM_PSP)
 
-	# set(BUILD_PRX 1)
+	set(BUILD_PRX 1)
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE
+	pspge
+	pspwlan
+	pspnet
+	pspnet_apctl
+	pspnet_resolver
+	psphttp
 	  pspdebug	
 		pspdisplay
-		pspge
-		pspnet
-		pspnet_apctl
-		pspwlan
-		pspnet_resolver
-		pspnet_inet
-		psphttp
 		curl
 	)
 

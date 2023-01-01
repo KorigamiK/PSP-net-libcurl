@@ -151,7 +151,8 @@ void curlDownloadFile(std::string url, std::string file)
 
 void netInit(void)
 {
-	sceNetInit(128 * 1024, 42, 4 * 1024, 42, 4 * 1024);
+	if (sceNetInit(128 * 1024, 42, 4 * 1024, 42, 4 * 1024) < 0)
+		pspDebugScreenPrintf("sceNetInit failed\n");
 
 	sceNetInetInit();
 
@@ -201,9 +202,8 @@ int main(int argc, char *argv[])
 	{
 		sceIoMkdir("host0:data/curltest", 0777);
 	}
-	pspDebugScreenPrintf("Downloading github file");
-	curlDownloadFile("https://github.com/devingDev/VitaCord/releases/download/"
-									 "1.5fix1/vita_cord.vpk",
+	pspDebugScreenPrintf("Downloading file psyq-4_7-converted-light.zip to host0:data/curltest/");
+	curlDownloadFile("http://psx.arthus.net/sdk/Psy-Q/psyq-4_7-converted-light.zip",
 									 "host0:data/curltest/vita_cord.vpk");
 
 	httpTerm();
