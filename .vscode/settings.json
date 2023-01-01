@@ -1,0 +1,15 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cmake.configureArgs": [
+        "-DCMAKE_TOOLCHAIN_FILE=/usr/local/pspdev/psp/share/pspdev.cmake",
+        "-DPLATFORM_PSP=1",
+        "-DVERBOSE=1"
+    ],
+    "cmake.generator": "Unix Makefiles",
+    "cmake.environment": {
+        "PSPDEV": "/usr/local/pspdev",
+        "PSPSDK": "/usr/local/pspdev/psp/sdk",
+        "PATH": "/usr/local/pspdev/bin:/usr/local/pspdev/psp/bin:$PATH"
+    },
+    "editor.tabSize": 2,
+}
