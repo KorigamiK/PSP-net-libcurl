@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(
-	resolver
+	curl_test
 	VERSION 0.1.0
-	DESCRIPTION "PSP net resolver"
+	DESCRIPTION "PSP cURL test"
 	LANGUAGES CXX
 )
 

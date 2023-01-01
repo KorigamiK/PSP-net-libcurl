@@ -19,6 +19,8 @@
 
 #include <curl/curl.h>
 
+PSP_MODULE_INFO("curl_test", 0, 1, 1);
+
 struct stringcurl
 {
 	char *ptr;
@@ -184,6 +186,9 @@ void httpTerm()
 
 int main(int argc, char *argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	pspDebugScreenInit();
 	pspDebugScreenPrintf("HTTP Sample v.1.0 by barooney\n\n");
 
