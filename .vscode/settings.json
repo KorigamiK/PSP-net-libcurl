@@ -12,4 +12,15 @@
         "PATH": "/usr/local/pspdev/bin:/usr/local/pspdev/psp/bin:$PATH"
     },
     "editor.tabSize": 2,
+    "files.associations": {
+        "*.ejs": "html",
+        "*.css": "css",
+        "*.crawljob": "json",
+        ".gitignore": "ignore",
+        "*.asm": "assembly",
+        "PSPBUILD": "aur-pkgbuild",
+        "*.rmarkdown": "markdown",
+        "*.rmd": "markdown",
+        "iostream": "cpp"
+    },
 }

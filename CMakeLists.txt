@@ -26,6 +26,10 @@ if (PLATFORM_PSP)
 		pspnet
 		pspnet_apctl
 		pspwlan
+		pspnet_resolver
+		pspnet_inet
+		psphttp
+		curl
 	)
 
 	create_pbp_file(
