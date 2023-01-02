@@ -12,112 +12,52 @@
 
 #include <pspdebug.h>
 #include <pspkernel.h>
-#include <pspnet.h>
-#include <pspnet_apctl.h>
-#include <pspnet_inet.h>
-#include <psputility.h>
-#include <pspdisplay.h>
+#include <pspctrl.h>
 
 #include <iostream>
 #include <string.h>
 
 #include "callbacks.hpp"
+#include "file_handler.hpp"
+#include "graphics.hpp"
+#include "network.hpp"
 
 #define SCR_WIDTH (480)
 #define SCR_HEIGHT (272)
+#define URL_FIlE "./url.txt"
 
 PSP_MODULE_INFO("cURL Test", 0, 1, 1);
 
-int dialogDone = 0;
-
-void netInit(void)
+int main_thread(SceSize args, void *argp)
 {
-	sceNetInit(128 * 1024, 42, 4 * 1024, 42, 4 * 1024);
+	(void)args;
+	(void)argp;
 
-	sceNetInetInit();
+	// Get the URL from the file
+	std::string url = get_file_contents(URL_FIlE);
 
-	sceNetApctlInit(0x8000, 48);
+	pspDebugScreenPrintf("\n%s\n", url.c_str());
+
+	return 0;
 }
 
-void netTerm(void)
+void init()
 {
-	sceNetApctlTerm();
+	setupGu();
 
-	sceNetInetTerm();
+	pspDebugScreenInit();
+	pspDebugScreenSetXY(0, 0);
 
-	sceNetTerm();
+	pspDebugScreenSetBackColor(0xFFCCCF);
+	pspDebugScreenSetTextColor(0x000000);
+	pspDebugScreenClear();
+
+	startNetworking();
 }
 
-void networkDialog()
+void close()
 {
-	std::cout << "Starting Network Dialog" << std::endl;
-	pspUtilityNetconfData data;
-
-	memset(&data, 0, sizeof(data));
-	data.base.size = sizeof(data);
-	data.base.language = PSP_SYSTEMPARAM_LANGUAGE_ENGLISH;
-	data.base.buttonSwap = PSP_UTILITY_ACCEPT_CIRCLE;
-	data.action = PSP_NETCONF_ACTION_CONNECTAP;
-	data.base.graphicsThread = 17;
-	data.base.accessThread = 19;
-	data.base.fontThread = 18;
-	data.base.soundThread = 16;
-
-	pspUtilityNetconfAdhoc adhocparam;
-	memset(&adhocparam, 0, sizeof(adhocparam));
-	data.adhocparam = &adhocparam;
-
-	sceUtilityNetconfInitStart(&data);
-
-	int status;
-	while (!dialogDone)
-	{
-		status = sceUtilityNetconfGetStatus();
-		switch (status)
-		{
-		case PSP_UTILITY_DIALOG_NONE:
-			break;
-
-		case PSP_UTILITY_DIALOG_VISIBLE:
-			sceUtilityNetconfUpdate(1);
-			break;
-
-		case PSP_UTILITY_DIALOG_QUIT:
-			sceUtilityNetconfShutdownStart();
-			break;
-
-		case PSP_UTILITY_DIALOG_FINISHED:
-			dialogDone = 1;
-			break;
-
-		default:
-			break;
-		}
-
-		sceDisplayWaitVblankStart();
-	}
-	std::cout << "Network Dialog Done" << std::endl;
-}
-
-void mainThread()
-{
-	bool running = true;
-
-	while (running)
-	{
-		switch (dialogDone)
-		{
-		case 0:
-			pspDebugScreenPrintf(" Dialog not done yet");
-			// sleep 3 second
-			sceKernelDelayThread(1000 * 1000 * 3);
-			break;
-
-		default:
-			running = false;
-			break;
-		}
-	}
+	stopNetworking();
 }
 
 int main(int argc, char const *argv[])
@@ -125,26 +65,32 @@ int main(int argc, char const *argv[])
 	(void)argc;
 	(void)argv;
 
-	pspDebugScreenInit();
-	// debug screent in bottom half of screen
-	pspDebugScreenSetXY(SCR_WIDTH / 2, SCR_HEIGHT / 2);
-	SetupCallbacks();
-	pspDebugScreenPrintf("Hello World!");
+	init();
+	pspDebugScreenPrintf("cURL Test");
 
-	sceUtilityLoadNetModule(PSP_NET_MODULE_COMMON);
-	sceUtilityLoadNetModule(PSP_NET_MODULE_INET);
-	netInit();
+	// Main thread loop
+	// SceUID thid = sceKernelCreateThread("net_thread", main_thread, 0x18, 0x10000, PSP_THREAD_ATTR_USER, NULL);
+	// if (thid < 0)
+	// {
+	// 	pspDebugScreenPrintf("Error, could not create thread\n");
+	// 	sceKernelSleepThread();
+	// }
+	// _sceKernelExitThread(thid, 0, NULL);
 
-	// Start the main thread in a new thread in background
-	// SceUID mainThreadID = sceKernelCreateThread("mainThread",
-	// (SceKernelThreadEntry)mainThread, 0x11, 0xFA0, 0, 0);
-	// sceKernelStartThread(mainThreadID, 0, 0);
+	main_thread(0, NULL);
 
-	networkDialog();
+	close();
 
-	netTerm();
+	printf("Press X to exit\n");
+	pspDebugScreenPrintf("Press X to exit");
+	while (1)
+	{
+		SceCtrlData pad;
+		sceCtrlReadBufferPositive(&pad, 1);
+		if (pad.Buttons & PSP_CTRL_CROSS)
+			break;
+	}
 
-	sceKernelSleepThread();
 	sceKernelExitGame();
 
 	return 0;

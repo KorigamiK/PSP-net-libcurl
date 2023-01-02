@@ -27,17 +27,23 @@ if (PLATFORM_PSP)
 
 	set(BUILD_PRX 1)
 
-	target_link_libraries(${PROJECT_NAME} PRIVATE
-		pspge
-		pspdisplay
-	  pspdebug	
-		pspwlan
-		pspnet
-		pspnet_apctl
-		pspnet_resolver
+	set(DEFAULT_STUBS
+			pspdebug 
+			pspdisplay 
+			pspge 
+			pspctrl 
+			pspnet 
+			pspnet_apctl
+    )
+
+	set(LIBS
+		stdc++
 		psphttp
-		curl
+		pspgum
+		pspgu
 	)
+
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS} ${DEFAULT_STUBS})
 
 	create_pbp_file(
 		TARGET ${PROJECT_NAME}
