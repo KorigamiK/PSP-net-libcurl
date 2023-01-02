@@ -38,6 +38,10 @@ int main_thread(SceSize args, void *argp)
 
 	pspDebugScreenPrintf("\n%s\n", url.c_str());
 
+	// Download the file
+	pspDebugScreenPrintf("\nDownloading...\n");
+	curlDownload(url) < 0 ? pspDebugScreenPrintf("Failed!\n") : pspDebugScreenPrintf("Success!\n");
+
 	return 0;
 }
 
@@ -67,15 +71,6 @@ int main(int argc, char const *argv[])
 
 	init();
 	pspDebugScreenPrintf("cURL Test");
-
-	// Main thread loop
-	// SceUID thid = sceKernelCreateThread("net_thread", main_thread, 0x18, 0x10000, PSP_THREAD_ATTR_USER, NULL);
-	// if (thid < 0)
-	// {
-	// 	pspDebugScreenPrintf("Error, could not create thread\n");
-	// 	sceKernelSleepThread();
-	// }
-	// _sceKernelExitThread(thid, 0, NULL);
 
 	main_thread(0, NULL);
 

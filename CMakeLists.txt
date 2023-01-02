@@ -41,6 +41,7 @@ if (PLATFORM_PSP)
 		psphttp
 		pspgum
 		pspgu
+		curl
 	)
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS} ${DEFAULT_STUBS})

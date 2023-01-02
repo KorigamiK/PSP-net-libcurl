@@ -12,11 +12,62 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <fstream>
+#include <iostream>
+
+#include <curl/curl.h>
 
 #define printf pspDebugScreenPrintf
 
 int netDialogActive = -1;
-int httpTemplate;
+
+int curlDownload(std::string &url, std::string file)
+{
+  std::ofstream saveFile(file, std::ios::binary);
+  if (!saveFile.is_open())
+  {
+    printf("Could not open file %s for writing!\n", file.c_str());
+    return -1;
+  }
+
+  CURL *curl = curl_easy_init();
+
+  if (!curl)
+  {
+    printf("Could not initialize cURL!\n");
+    return -1;
+  }
+
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &saveFile);
+
+  CURLcode res = curl_easy_perform(curl);
+
+  if (res != CURLE_OK)
+  {
+    printf("cURL error: %s\n", curl_easy_strerror(res));
+    std::cout << "URL: " << url << std::endl;
+    std::cout << "File: " << file << std::endl;
+    std::cout << "Error code: " << res << std::endl;
+    std::cout << "Error string: " << curl_easy_strerror(res) << std::endl;
+    return -1;
+  }
+
+  curl_easy_cleanup(curl);
+
+  saveFile.close();
+
+  return 0;
+}
+
+size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+  std::ofstream *out = (std::ofstream *)stream;
+  out->write((char *)ptr, size * nmemb);
+  return size * nmemb;
+}
 
 void loadNetworkingLibs()
 {
@@ -26,6 +77,24 @@ void loadNetworkingLibs()
   rc = sceUtilityLoadNetModule(PSP_NET_MODULE_INET);
   if (rc < 0)
     printf("inet didn't load.\n");
+}
+
+void httpInit()
+{
+  pspDebugScreenPrintf("Loading module SCE_SYSMODULE_HTTP\n");
+  sceUtilityLoadNetModule(PSP_NET_MODULE_HTTP);
+
+  pspDebugScreenPrintf("Running sceHttpInit\n");
+  sceHttpInit(4 * 1024 * 1024);
+}
+
+void httpTerm()
+{
+  pspDebugScreenPrintf("Running sceHttpTerm\n");
+  sceHttpEnd();
+
+  pspDebugScreenPrintf("Unloading module SCE_SYSMODULE_HTTP\n");
+  sceUtilityUnloadNetModule(PSP_NET_MODULE_HTTP);
 }
 
 int goOnline()
@@ -40,7 +109,7 @@ int goOnline()
     stopNetworking();
     return 1;
   }
-  sceHttpInit(20000);
+  httpInit();
   return 0;
 }
 
@@ -136,6 +205,7 @@ void startNetworking()
 void stopNetworking()
 {
   printf("Shutting down networking.\n");
+  httpTerm();
   sceNetResolverTerm();
   sceNetApctlTerm();
   sceNetInetTerm();
