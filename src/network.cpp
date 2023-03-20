@@ -21,45 +21,70 @@
 
 int netDialogActive = -1;
 
-int curlDownload(std::string &url, std::string file)
+#define HTTP_SUCCESS 1
+#define HTTP_FAILED 0
+
+int curlDownload(std::string &full_url, std::string local_dst)
 {
-  std::ofstream saveFile(file, std::ios::binary);
-  if (!saveFile.is_open())
-  {
-    printf("Could not open file %s for writing!\n", file.c_str());
-    return -1;
-  }
+  CURL *curl;
+  CURLcode res;
+  FILE *fd;
 
-  CURL *curl = curl_easy_init();
-
+  curl = curl_easy_init();
   if (!curl)
   {
-    printf("Could not initialize cURL!\n");
-    return -1;
+    std::cout << "ERROR: CURL INIT" << std::endl;
+    return HTTP_FAILED;
   }
 
-  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  fd = fopen(local_dst.c_str(), "wb");
+  if (!fd)
+  {
+    printf("fopen Error: File path '%s'", local_dst);
+    return HTTP_FAILED;
+  }
 
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &saveFile);
+  printf("Download URL: %s >> %s", full_url, local_dst);
 
-  CURLcode res = curl_easy_perform(curl);
+  curl_easy_setopt(curl, CURLOPT_URL, full_url);
+  // Set user agent string
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "cURL agent");
+  // not sure how to use this when enabled
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+  // not sure how to use this when enabled
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  // Set SSL VERSION to TLS 1.2
+  curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+  // Set timeout for the connection to build
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+  // Follow redirects (?)
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  // The function that will be used to write the data
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
+  // The data filedescriptor which will be written to
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, fd);
+  // maximum number of redirects allowed
+  curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 20L);
+  // Fail the request if the HTTP code returned is equal to or larger than 400
+  curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+  // request using SSL for the FTP transfer if available
+  curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
+
+  // Perform the request
+  res = curl_easy_perform(curl);
+  // close filedescriptor
+  fclose(fd);
+  // cleanup
+  curl_easy_cleanup(curl);
 
   if (res != CURLE_OK)
   {
-    printf("cURL error: %s\n", curl_easy_strerror(res));
-    std::cout << "URL: " << url << std::endl;
-    std::cout << "File: " << file << std::endl;
-    std::cout << "Error code: " << res << std::endl;
-    std::cout << "Error string: " << curl_easy_strerror(res) << std::endl;
-    return -1;
+    printf("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    remove(local_dst.c_str());
+    return HTTP_FAILED;
   }
 
-  curl_easy_cleanup(curl);
-
-  saveFile.close();
-
-  return 0;
+  return HTTP_SUCCESS;
 }
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)

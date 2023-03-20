@@ -41,6 +41,8 @@ if (PLATFORM_PSP)
 		psphttp
 		pspgum
 		pspgu
+		z
+		polarssl
 		curl
 	)
 
