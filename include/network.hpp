@@ -4,10 +4,12 @@
 
 #define SAVE_FILE "./save.zip"
 
+#ifdef __PSP__
 int drawNetDialog();
 int netDialog();
 void stopNetworking();
 void startNetworking();
+#endif
 
 int curlDownload(std::string &url, std::string file = SAVE_FILE);
 

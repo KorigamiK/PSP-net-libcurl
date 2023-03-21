@@ -1,5 +1,6 @@
 #include "network.hpp"
 
+#ifdef __PSP__
 #include <pspdebug.h>
 #include <psputility.h>
 #include <pspdisplay.h>
@@ -10,6 +11,10 @@
 #include <pspnet_resolver.h>
 #include <psphttp.h>
 
+#define printf pspDebugScreenPrintf
+
+#endif
+
 #include <string.h>
 #include <stdlib.h>
 #include <fstream>
@@ -17,12 +22,21 @@
 
 #include <curl/curl.h>
 
-#define printf pspDebugScreenPrintf
-
 int netDialogActive = -1;
 
-#define HTTP_SUCCESS 1
-#define HTTP_FAILED 0
+#define HTTP_SUCCESS 0
+#define HTTP_FAILED -1
+
+#ifdef __PSP__
+extern "C"
+{
+  char *basename(const char *filename)
+  {
+    char *p = strrchr(filename, '/');
+    return p ? p + 1 : (char *)filename;
+  }
+}
+#endif
 
 int curlDownload(std::string &full_url, std::string local_dst)
 {
@@ -33,18 +47,19 @@ int curlDownload(std::string &full_url, std::string local_dst)
   curl = curl_easy_init();
   if (!curl)
   {
-    std::cout << "ERROR: CURL INIT" << std::endl;
+    std::cout << "ERROR: CURL INIT\n"
+              << std::endl;
     return HTTP_FAILED;
   }
 
   fd = fopen(local_dst.c_str(), "wb");
   if (!fd)
   {
-    printf("fopen Error: File path '%s'", local_dst);
+    printf("fopen Error: File path '%s'\n", local_dst.c_str());
     return HTTP_FAILED;
   }
 
-  printf("Download URL: %s >> %s", full_url, local_dst);
+  printf("Download URL: %s >> %s\n", full_url.c_str(), local_dst.c_str());
 
   curl_easy_setopt(curl, CURLOPT_URL, full_url);
   // Set user agent string
@@ -79,7 +94,7 @@ int curlDownload(std::string &full_url, std::string local_dst)
 
   if (res != CURLE_OK)
   {
-    printf("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     remove(local_dst.c_str());
     return HTTP_FAILED;
   }
@@ -94,6 +109,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return size * nmemb;
 }
 
+#ifdef __PSP__
 void loadNetworkingLibs()
 {
   int rc = sceUtilityLoadNetModule(PSP_NET_MODULE_COMMON);
@@ -236,3 +252,4 @@ void stopNetworking()
   sceNetInetTerm();
   sceNetTerm();
 }
+#endif

@@ -7,8 +7,18 @@ project(
 	LANGUAGES CXX
 )
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.hpp")
+
+if (PSP)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+else()
+set(
+	SOURCES
+		src/main.cpp
+		src/network.cpp
+		src/file_handler.cpp
+)
+endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
@@ -41,9 +51,9 @@ if (PLATFORM_PSP)
 		psphttp
 		pspgum
 		pspgu
-		z
-		polarssl
 		curl
+		polarssl
+		z
 	)
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS} ${DEFAULT_STUBS})
@@ -64,6 +74,7 @@ if (PLATFORM_PSP)
 
 else()
 
-	message(FATAL_ERROR "This project can only be built for the PSP")
+	# message(FATAL_ERROR "This project can only be built for the PSP")
+	target_link_libraries(${PROJECT_NAME} PRIVATE curl)
 
 endif()
