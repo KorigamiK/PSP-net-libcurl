@@ -10,23 +10,30 @@
  *
  */
 
+#ifdef __PSP__
 #include <pspdebug.h>
 #include <pspkernel.h>
 #include <pspctrl.h>
+#include <pspgu.h>
+#include <pspdisplay.h>
+#include "callbacks.hpp"
+#include "graphics.hpp"
+
+PSP_MODULE_INFO("cURL Test", 0, 1, 1);
+#else
+#define pspDebugScreenPrintf printf
+#define SceSize size_t
+#endif
 
 #include <iostream>
 #include <string.h>
 
-#include "callbacks.hpp"
 #include "file_handler.hpp"
-#include "graphics.hpp"
 #include "network.hpp"
 
 #define SCR_WIDTH (480)
 #define SCR_HEIGHT (272)
 #define URL_FIlE "./url.txt"
-
-PSP_MODULE_INFO("cURL Test", 0, 1, 1);
 
 int main_thread(SceSize args, void *argp)
 {
@@ -34,17 +41,18 @@ int main_thread(SceSize args, void *argp)
 	(void)argp;
 
 	// Get the URL from the file
-	std::string url = get_file_contents(URL_FIlE);
+	std::string url = "https://www.google.com/robots.txt";
 
 	pspDebugScreenPrintf("\n%s\n", url.c_str());
 
 	// Download the file
 	pspDebugScreenPrintf("\nDownloading...\n");
-	curlDownload(url) < 0 ? pspDebugScreenPrintf("Failed!\n") : pspDebugScreenPrintf("Success!\n");
+	curlDownload(url, "robots.txt") < 0 ? pspDebugScreenPrintf("Failed!\n") : pspDebugScreenPrintf("Success!\n");
 
 	return 0;
 }
 
+#ifdef __PSP__
 void init()
 {
 	setupGu();
@@ -63,6 +71,14 @@ void close()
 {
 	stopNetworking();
 }
+#else
+void init()
+{
+}
+void close()
+{
+}
+#endif
 
 int main(int argc, char const *argv[])
 {
@@ -76,6 +92,7 @@ int main(int argc, char const *argv[])
 
 	close();
 
+#ifdef __PSP__
 	printf("Press X to exit\n");
 	pspDebugScreenPrintf("Press X to exit");
 	while (1)
@@ -84,9 +101,17 @@ int main(int argc, char const *argv[])
 		sceCtrlReadBufferPositive(&pad, 1);
 		if (pad.Buttons & PSP_CTRL_CROSS)
 			break;
+		// Clear background to Bjack
+		sceGuClearColor(0xFF000000);
+		sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT | GU_STENCIL_BUFFER_BIT);
+
+		sceGuFinish();
+		sceGuSync(0, 0);
+		sceDisplayWaitVblankStart();
 	}
 
 	sceKernelExitGame();
+#endif
 
 	return 0;
 }

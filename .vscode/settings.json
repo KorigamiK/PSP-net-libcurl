@@ -3,7 +3,8 @@
     "cmake.configureArgs": [
         "-DCMAKE_TOOLCHAIN_FILE=/usr/local/pspdev/psp/share/pspdev.cmake",
         "-DPLATFORM_PSP=1",
-        "-DVERBOSE=1"
+        "-DVERBOSE=1",
+        "-DCMAKE_MAKE_PROGRAM=/usr/bin/make",
     ],
     "cmake.generator": "Unix Makefiles",
     "cmake.environment": {
