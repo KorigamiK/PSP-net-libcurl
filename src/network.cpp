@@ -61,7 +61,9 @@ int curlDownload(std::string &full_url, std::string local_dst)
 
   printf("Download URL: %s >> %s\n", full_url.c_str(), local_dst.c_str());
 
-  curl_easy_setopt(curl, CURLOPT_URL, full_url);
+  curl_easy_setopt(curl, CURLOPT_URL, full_url.c_str());
+  // Enable verbose output
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   // Set user agent string
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "cURL agent");
   // not sure how to use this when enabled

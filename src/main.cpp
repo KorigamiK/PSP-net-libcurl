@@ -14,6 +14,8 @@
 #include <pspdebug.h>
 #include <pspkernel.h>
 #include <pspctrl.h>
+#include <pspgu.h>
+#include <pspdisplay.h>
 #include "callbacks.hpp"
 #include "graphics.hpp"
 
@@ -99,6 +101,13 @@ int main(int argc, char const *argv[])
 		sceCtrlReadBufferPositive(&pad, 1);
 		if (pad.Buttons & PSP_CTRL_CROSS)
 			break;
+		// Clear background to Bjack
+		sceGuClearColor(0xFF000000);
+		sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT | GU_STENCIL_BUFFER_BIT);
+
+		sceGuFinish();
+		sceGuSync(0, 0);
+		sceDisplayWaitVblankStart();
 	}
 
 	sceKernelExitGame();

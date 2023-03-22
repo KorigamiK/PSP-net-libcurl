@@ -47,13 +47,13 @@ if (PLATFORM_PSP)
     )
 
 	set(LIBS
-		stdc++
-		psphttp
-		pspgum
-		pspgu
-		curl
-		polarssl
-		z
+			stdc++
+			psphttp
+			pspgum
+			pspgu
+			curl
+			polarssl
+			z
 	)
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS} ${DEFAULT_STUBS})
@@ -74,7 +74,9 @@ if (PLATFORM_PSP)
 
 else()
 
-	# message(FATAL_ERROR "This project can only be built for the PSP")
+	message(STATUS "Building native version")
+
+	find_package(CURL REQUIRED)
 	target_link_libraries(${PROJECT_NAME} PRIVATE curl)
 
 endif()
